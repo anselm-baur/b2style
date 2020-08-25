@@ -1,0 +1,6 @@
+README.md
+setup.py
+b2style_anselm_baur.egg-info/PKG-INFO
+b2style_anselm_baur.egg-info/SOURCES.txt
+b2style_anselm_baur.egg-info/dependency_links.txt
+b2style_anselm_baur.egg-info/top_level.txt
