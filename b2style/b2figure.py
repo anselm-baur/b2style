@@ -5,12 +5,19 @@ from uncertainties import unumpy as unp
 from scipy.stats import binned_statistic
 import os
 import b2style.b2plotstyle
+import b2style.b2colors
+from b2style.b2colors import B2Colors
 
 class B2Figure:
     def __init__(self):
         #self.pointstyle = {'color': 'navy', 'marker': '.', 'ls': ''}
         self.pointstyle = {'marker': '.', 'ls': ''}
         b2style.b2plotstyle.set_default_plot_params()
+        b2style.b2colors.set_default_colors('reset')
+        self.colors = B2Colors()
+
+    def color(self,color):
+        return self.colors.color[color]
 
     def create_figure(self, figsize=(5, 5), dpi=200, n_x_subfigures=1, n_y_subfigures=1, **kwargs):
         return plt.subplots(ncols=n_x_subfigures, nrows=n_y_subfigures, figsize=figsize, dpi=dpi, **kwargs)
@@ -42,7 +49,11 @@ class B2Figure:
     def get_bincenters_of_binedges(self, bin_edges):
         return np.mean(np.vstack([bin_edges[0:-1],bin_edges[1:]]), axis=0)
 
+    def get_range(self,data):
+        return (np.nanmin(data),np.nanmax(data))
+
     def point_plot_hist(self, ax, data, label='', bins=100, range='', color='black',weight=1,density=False):
+        color = B2Colors.color[color]
         if not range:
             range = (data.min(), data.max())
         hist, bin_edges = np.histogram(data,bins=bins, range=range, density=density)
@@ -51,8 +62,12 @@ class B2Figure:
         x_err = (bin_centers[1]-bin_centers[0])/2
         ax.errorbar(bin_centers, hist*weight, yerr=y_err*weight, xerr=x_err, label=label, elinewidth=0.5, fmt='o', color=color, markersize='1.4')
 
-    def pull_plot(self, ax, data1, data2, bins, range, variable='', color='black', weight=1, is_df=False, stacked=False, density=False):
+    def pull_plot(self, ax, data1, data2, bins, range=None, variable='', color='black', weight=1, is_df=False, stacked=False, density=False):
+        color = B2Colors.color[color]
+                    
         if stacked:
+            if not range:
+                range = self.get_range(data1[variable].to_numpy())
             hist1, bin_edges = np.histogram(data1[variable].to_numpy(),bins=bins, range=range, density=density)
             hist2 = np.sum(np.array([binned_statistic(data2_i[variable].to_numpy(), data2_i['__weight__'].to_numpy(), statistic="sum", bins=bin_edges)[0] for data2_i in data2]), axis=0)
             err_hist2 = np.sum(np.array([binned_statistic(data2_i[variable].to_numpy(), data2_i['__weight__'].to_numpy()**2, statistic="sum", bins=bin_edges)[0] for data2_i in data2]), axis=0)
@@ -75,6 +90,8 @@ class B2Figure:
             if is_df:
                 pass
             else:
+                if not range:
+                    range = self.get_range(data1)
                 hist1, bin_edges = np.histogram(data1,bins=bins, range=range)
                 hist2, bin_edges = np.histogram(data2,bins=bins, range=range,weights=weight if isinstance(weight, list) else np.full(data2.size,weight))
 
@@ -103,7 +120,9 @@ class B2Figure:
             os.makedirs(target_dir)
 
         for file_format in file_formats:
-            fig.savefig(os.path.join(target_dir, f'{filename}{file_format}'), bbox_inches="tight")
+            #fig.savefig(os.path.join(target_dir, f'{filename}{file_format}'), bbox_inches="tight")
+            #print(f'{filename}{file_format}')
+            fig.savefig(f'{target_dir}{filename}{file_format}', bbox_inches="tight")
 
 
     def show(self):
