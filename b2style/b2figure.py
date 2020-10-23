@@ -1,3 +1,4 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from typing import Union
 import numpy as np
@@ -7,14 +8,19 @@ import os
 import b2style.b2plotstyle
 import b2style.b2colors
 from b2style.b2colors import B2Colors
+from collections import OrderedDict
 
 class B2Figure:
     def __init__(self):
         #self.pointstyle = {'color': 'navy', 'marker': '.', 'ls': ''}
         self.pointstyle = {'marker': '.', 'ls': ''}
         b2style.b2plotstyle.set_default_plot_params()
-        b2style.b2colors.set_default_colors('reset')
+        b2style.b2colors.set_default_colors('kit')
         self.colors = B2Colors()
+
+        self.xlabel_pos = OrderedDict([('x', 1), ('ha', 'right')])
+        self.ylabel_pos = OrderedDict([('y', 1), ('ha', 'right')])
+
 
     def color(self,color):
         return self.colors.color[color]
@@ -24,14 +30,28 @@ class B2Figure:
 
     def add_descriptions(self, ax: plt.axis,
                                  experiment: Union[str, None] = 'Belle II',
-                                 luminosity: Union[str, None] = '',
+                                 luminosity: Union[str, int, float, None] = '',
                                  additional_info: Union[str, None] = None,
                                  small_title: Union[bool, None] = False,
                                  preliminary: Union[bool, None] = True,
-                                 title_indent: Union[int, None] = 0
+                                 title_indent: Union[int, None] = 0,
+                                 exp_nr: Union[int, None] = None,
+                                 proc_nr: Union[int, None] = None,
+                                 buck_nr: Union[int, None] = None,
                                  ):
 
-       
+        # generate luminosity text
+        if type(luminosity) == int or type(luminosity) == float:
+           luminosity = r"$\int \mathcal{L} \,\mathrm{d}t=" + "{:.0f}".format(np.round(luminosity,0))  +"\,\mathrm{pb}^{-1}$"
+
+        # add some additional dataset meta data
+        if exp_nr:
+            luminosity += f"\nExp. {exp_nr}"
+            if proc_nr:
+                 luminosity += f", Proc {proc_nr}"
+            if buck_nr:
+                 luminosity += f", Buck. {buck_nr}"
+
         
         if small_title:
             ax.set_title('{}'.format(' '*title_indent)+experiment+'\n{}'.format(' '*title_indent)+'{}'.format('(Preliminary)' if preliminary else ''), loc="left", fontdict={'style': 'normal', 'weight': 'bold'})                
@@ -51,6 +71,9 @@ class B2Figure:
 
     def get_range(self,data):
         return (np.nanmin(data),np.nanmax(data))
+
+    def add_bin_width(self, bin_edges, units=''):
+        return r"/$" + str(np.round((bin_edges[1]-bin_edges[0]),3)) + r"\;$" + units 
 
     def point_plot_hist(self, ax, data, label='', bins=100, range='', color='black',weight=1,density=False):
         color = B2Colors.color[color]
