@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: b2style-anselm-baur
+Version: 0.0.1
+Summary: style package for Belle II plots
+Home-page: https://github.com/anselm-baur/b2style
+Author: Anselm Baur
+Author-email: anselm.baur@desy.de
+License: UNKNOWN
+Description: This package contains styles for Belle II plots. The source code is hosted on GitHub:
+        https://github.com/anselm-baur/b2style
+        
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
