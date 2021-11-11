@@ -5,9 +5,10 @@ import numpy as np
 from uncertainties import unumpy as unp
 from scipy.stats import binned_statistic
 import os
-import b2style.b2plotstyle
+from b2style.b2plotstyle import *
 import b2style.b2colors
 from b2style.b2colors import B2Colors
+from b2style.b2description import B2Description
 from collections import OrderedDict
 from pathlib import Path
 
@@ -15,8 +16,8 @@ class B2Figure:
     def __init__(self):
         #self.pointstyle = {'color': 'navy', 'marker': '.', 'ls': ''}
         self.pointstyle = {'marker': '.', 'ls': ''}
-        b2style.b2plotstyle.set_default_plot_params()
-        b2style.b2colors.set_default_colors('kit')
+        set_default_plot_params()
+        b2style.b2colors.set_default_colors('phd')
         self.colors = B2Colors()
 
         self.xlabel_pos = OrderedDict([('x', 1), ('ha', 'right')])
@@ -32,6 +33,13 @@ class B2Figure:
     def subplots_adjust(self,**kwargs):
         plt.subplots_adjust(**kwargs)
 
+    def add_head_room(self, ax, data_list, head_room_frac=1.1, y_lower_lim=0):
+        max_list = []
+        for data in data_list:
+            max_list.append(np.max(data))
+        max_bin_entries = np.max(max_list)
+        ax.set_ylim((y_lower_lim, max_bin_entries*head_room_frac))
+
     def add_descriptions(self, ax: plt.axis,
                                  experiment: Union[str, None] = 'Belle II',
                                  luminosity: Union[str, int, float, None] = '',
@@ -42,11 +50,12 @@ class B2Figure:
                                  exp_nr: Union[int, None] = None,
                                  proc_nr: Union[int, None] = None,
                                  buck_nr: Union[int, None] = None,
+                                 description: Union[B2Description, None] = None
                                  ):
 
         # generate luminosity text
         if type(luminosity) == int or type(luminosity) == float:
-           luminosity = r"$\int \mathcal{L} \,\mathrm{d}t=" + "{:.0f}".format(np.round(luminosity,0))  +"\,\mathrm{pb}^{-1}$"
+           luminosity = r"$\int \mathcal{L} \,\mathrm{d}t=" + "{:.0f}".format(np.round(luminosity,0))  +"\,\mathrm{fb}^{-1}$"
 
         # add some additional dataset meta data
         if exp_nr:
@@ -69,6 +78,9 @@ class B2Figure:
             textcoords='offset points',
             fontweight='bold', ha='left', va='top'
         )
+
+        if description:
+            description.add(ax)
 
     def get_bincenters_of_binedges(self, bin_edges):
         return np.mean(np.vstack([bin_edges[0:-1],bin_edges[1:]]), axis=0)

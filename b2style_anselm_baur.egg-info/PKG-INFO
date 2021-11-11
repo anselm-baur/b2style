@@ -1,8 +1,8 @@
 Metadata-Version: 2.1
 Name: b2style-anselm-baur
-Version: 0.0.1
+Version: 0.0.2
 Summary: style package for Belle II plots
-Home-page: https://github.com/anselm-baur/b2style
+Home-page: https://stash.desy.de/users/abaur/repos/b2style/browse
 Author: Anselm Baur
 Author-email: anselm.baur@desy.de
 License: UNKNOWN

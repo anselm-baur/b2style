@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="b2style-anselm-baur", # Replace with your own username
-    version="0.0.2",
+    version="0.0.3",
     author="Anselm Baur",
     author_email="anselm.baur@desy.de",
     description="style package for Belle II plots",
