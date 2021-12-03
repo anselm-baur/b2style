@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+setup.py
+b2style/__init__.py
+b2style/b2colors.py
+b2style/b2description.py
+b2style/b2figure.py
+b2style/b2plotstyle.py
+b2style.egg-info/PKG-INFO
+b2style.egg-info/SOURCES.txt
+b2style.egg-info/dependency_links.txt
+b2style.egg-info/top_level.txt
