@@ -45,7 +45,8 @@ class B2Figure:
                                  luminosity: Union[str, int, float, None] = '',
                                  additional_info: Union[str, None] = None,
                                  small_title: Union[bool, None] = False,
-                                 preliminary: Union[bool, None] = True,
+                                 preliminary: Union[bool, None] = False,
+                                 simulation: Union[bool, None] = False,
                                  title_indent: Union[int, None] = 0,
                                  exp_nr: Union[int, None] = None,
                                  proc_nr: Union[int, None] = None,
@@ -67,7 +68,16 @@ class B2Figure:
 
         
         if small_title:
-            ax.set_title('{}'.format(' '*title_indent)+experiment+'\n{}'.format(' '*title_indent)+'{}'.format('(Preliminary)' if preliminary else ''), loc="left", fontdict={'style': 'normal', 'weight': 'bold'})                
+            if preliminary or simulation:
+                pad=0
+                y=1.05
+            else:
+                pad = 0 
+                y = 1
+            ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'style': 'normal', 'weight': 'bold'}, pad=pad, y=y)
+            ax.text(0.145, 0.9, '{}'.format(' '*title_indent)+'{}'.format('(Preliminary)' if preliminary else '')+'{}'.format('(Simulation)' if simulation else ''),
+                    transform=plt.gcf().transFigure)   
+
             ax.set_title(luminosity, loc="right")
         else:
             ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'size': 16, 'style': 'normal', 'weight': 'bold'})                
@@ -100,6 +110,7 @@ class B2Figure:
                                           bins=bin_edges)[0] for data_i in stacked_data]), 
                axis=0)
         return np.sqrt(stacked_err)
+
     def calculate_stacked_err_list(self,stacked_data,weights,bin_edges):
         # stacked_data conteins a list of data frames, the column variable is stacked, here we want to calc the unvertainty for this
         stacked_err = np.sum(np.array([binned_statistic(data_i, 
@@ -191,8 +202,8 @@ class B2Figure:
     def show(self):
         plt.show()
 
-def hist(df,var):
+def hist(df, var, hist_args={"bins": 50}):
     b2fig = B2Figure()
     fig, ax = b2fig.create_figure()
     b2fig.add_descriptions(ax)
-    ax.hist(df[var],bins=50)
+    ax.hist(df[var], **hist_args)
