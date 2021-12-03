@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="b2style-anselm-baur", # Replace with your own username
+    name="b2style",
     version="0.0.3",
     author="Anselm Baur",
     author_email="anselm.baur@desy.de",
