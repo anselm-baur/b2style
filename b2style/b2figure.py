@@ -27,7 +27,9 @@ class B2Figure:
     def color(self,color):
         return self.colors.color[color]
 
-    def create_figure(self, figsize=(5, 5), dpi=200, n_x_subfigures=1, n_y_subfigures=1, **kwargs):
+    def create_figure(self, figsize=None, dpi=200, n_x_subfigures=1, n_y_subfigures=1, **kwargs):
+        if not figsize:
+             figsize = (5*n_x_subfigures, 5*n_y_subfigures)
         return plt.subplots(ncols=n_x_subfigures, nrows=n_y_subfigures, figsize=figsize, dpi=dpi, **kwargs)
 
     def subplots_adjust(self,**kwargs):
@@ -66,23 +68,23 @@ class B2Figure:
             if buck_nr:
                  luminosity += f", Buck. {buck_nr}"
 
-        
         if small_title:
             if preliminary or simulation:
                 pad=0
                 y=1.05
             else:
-                pad = 0 
+                pad = 0
                 y = 1
+            lower_left = (0, 1.02)
             ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'style': 'normal', 'weight': 'bold'}, pad=pad, y=y)
-            ax.text(0.145, 0.9, '{}'.format(' '*title_indent)+'{}'.format('(Preliminary)' if preliminary else '')+'{}'.format('(Simulation)' if simulation else ''),
-                    transform=plt.gcf().transFigure)   
+            ax.text(*lower_left, '{}'.format(' '*title_indent)+'{}'.format('(Preliminary)' if preliminary else '')+'{}'.format('(Simulation)' if simulation else ''),
+                    transform=ax.transAxes)
 
             ax.set_title(luminosity, loc="right")
         else:
-            ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'size': 16, 'style': 'normal', 'weight': 'bold'})                
+            ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'size': 16, 'style': 'normal', 'weight': 'bold'})
             ax.set_title('{}'.format('(Preliminary) ' if preliminary else '' ) + luminosity, loc="right")
-            
+
         ax.annotate(
             additional_info, (0.02, 0.98), xytext=(4, -4), xycoords='axes fraction',
             textcoords='offset points',
@@ -99,24 +101,24 @@ class B2Figure:
         return (np.nanmin(data),np.nanmax(data))
 
     def add_bin_width(self, bin_edges, units=''):
-        return r"/$" + str(np.round((bin_edges[1]-bin_edges[0]),3)) + r"\;$" + units 
-    
-    
+        return r"/$" + str(np.round((bin_edges[1]-bin_edges[0]),3)) + r"\;$" + units
+
+
     def calculate_stacked_err_df(self,stacked_data,bin_edges,variable):
         # stacked_data conteins a list of data frames, the column variable is stacked, here we want to calc the unvertainty for this
-        stacked_err = np.sum(np.array([binned_statistic(data_i[variable].to_numpy(), 
-                                          data_i['__weight__'].to_numpy()**2, 
-                                          statistic="sum", 
-                                          bins=bin_edges)[0] for data_i in stacked_data]), 
+        stacked_err = np.sum(np.array([binned_statistic(data_i[variable].to_numpy(),
+                                          data_i['__weight__'].to_numpy()**2,
+                                          statistic="sum",
+                                          bins=bin_edges)[0] for data_i in stacked_data]),
                axis=0)
         return np.sqrt(stacked_err)
 
     def calculate_stacked_err_list(self,stacked_data,weights,bin_edges):
         # stacked_data conteins a list of data frames, the column variable is stacked, here we want to calc the unvertainty for this
-        stacked_err = np.sum(np.array([binned_statistic(data_i, 
-                                          weight_i**2, 
-                                          statistic="sum", 
-                                          bins=bin_edges)[0] for data_i,weight_i in zip(stacked_data,weights)]), 
+        stacked_err = np.sum(np.array([binned_statistic(data_i,
+                                          weight_i**2,
+                                          statistic="sum",
+                                          bins=bin_edges)[0] for data_i,weight_i in zip(stacked_data,weights)]),
                axis=0)
         return np.sqrt(stacked_err)
 
@@ -132,14 +134,14 @@ class B2Figure:
 
     def pull_plot(self, ax, data1, data2, bins, range=None, variable='', color='black', weight=1, is_df=False, stacked=False, density=False):
         color = B2Colors.color[color]
-                    
+
         if stacked:
             # data1: df with colum variable containing data
             # data2: a list of df each with column variable
             if not range:
                 range = self.get_range(data1[variable].to_numpy())
-                
-            # data 
+
+            # data
             hist1, bin_edges = np.histogram(data1[variable].to_numpy(),bins=bins, range=range, density=density)
             # MC
             hist2 = np.sum(np.array([binned_statistic(data2_i[variable].to_numpy(), data2_i['__weight__'].to_numpy(), statistic="sum", bins=bin_edges)[0] for data2_i in data2]), axis=0)
@@ -157,7 +159,7 @@ class B2Figure:
             ax.axhline(y=0, color='grey', alpha=0.8)
             ax.errorbar(bin_centers, unp.nominal_values(pull), yerr=unp.std_devs(pull),
                             fmt='o', color=color, markersize='1.4', elinewidth=0.5)
-            
+
 
         else:
             if is_df:
@@ -183,9 +185,9 @@ class B2Figure:
                 ax.errorbar(bin_centers, unp.nominal_values(pull), yerr=unp.std_devs(pull),
                                 fmt='o', color=color, markersize='1.4', elinewidth=0.5)
 
-            
+
         ax.set_ylim((-1,1))
-        
+
 
 
     def save(self, fig, filename,target_dir="plots/",file_formats=[".pdf"], **kwargs):
