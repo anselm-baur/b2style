@@ -13,10 +13,10 @@ from collections import OrderedDict
 from pathlib import Path
 
 class B2Figure:
-    def __init__(self):
+    def __init__(self, bold_labels=True):
         #self.pointstyle = {'color': 'navy', 'marker': '.', 'ls': ''}
         self.pointstyle = {'marker': '.', 'ls': ''}
-        set_default_plot_params()
+        set_default_plot_params(bold_labels=bold_labels)
         b2style.b2colors.set_default_colors('phd')
         self.colors = B2Colors()
 
@@ -26,6 +26,9 @@ class B2Figure:
 
     def color(self,color):
         return self.colors.color[color]
+
+    def create(self, **kwargs):
+        return self.create_figure(**kwargs)
 
     def create_figure(self, figsize=None, dpi=200, n_x_subfigures=1, n_y_subfigures=1, **kwargs):
         if not figsize:

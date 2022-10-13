@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def set_default_plot_params():
+def set_default_plot_params(bold_labels=True):
     """
     Sets default parameters in the matplotlibrc.
     :return: None
@@ -26,6 +26,7 @@ def set_default_plot_params():
         'formatter.use_mathtext': True,
         'titlesize': 'large',
         'labelpad': 4.0,
+        'labelweight': "bold" if bold_labels else "normal",
     }
     lines = {
         'lw': 1.5
