@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib
 
 def set_default_plot_params(bold_labels=True):
     """
@@ -35,7 +36,7 @@ def set_default_plot_params(bold_labels=True):
         'frameon': False
     }
     errorbar = {
-        'capsize': 0
+        'capsize': 0,
     }
 
     plt.rc('lines', **lines)
@@ -44,3 +45,7 @@ def set_default_plot_params(bold_labels=True):
     plt.rc('ytick', **ytick)
     plt.rc('legend', **legend)
     plt.rc('errorbar', **errorbar)
+
+    if bold_labels:
+        #matplotlib.rc('text', usetex=True)
+        matplotlib.rcParams['text.latex.preamble'] = [r'\boldmath']

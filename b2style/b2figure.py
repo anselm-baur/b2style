@@ -1,3 +1,4 @@
+from enum import auto
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from typing import Union
@@ -11,17 +12,28 @@ from b2style.b2colors import B2Colors
 from b2style.b2description import B2Description
 from collections import OrderedDict
 from pathlib import Path
+import datetime
 
 class B2Figure:
-    def __init__(self, bold_labels=True):
+    def __init__(self, bold_labels=True, dpi=200, output_dir='plots/', auto_description=False, description={}):
         #self.pointstyle = {'color': 'navy', 'marker': '.', 'ls': ''}
         self.pointstyle = {'marker': '.', 'ls': ''}
         set_default_plot_params(bold_labels=bold_labels)
         b2style.b2colors.set_default_colors('phd')
         self.colors = B2Colors()
+        self.dpi = dpi
+
+        self.description_args = description
+        self.auto_description = auto_description
+        self.save_fig = False
+        self.output_dir = output_dir
 
         self.xlabel_pos = OrderedDict([('x', 1), ('ha', 'right')])
         self.ylabel_pos = OrderedDict([('y', 1), ('ha', 'right')])
+
+        self.errorbar_args = {"fmt": 'o',
+                                      "elinewidth": 0.5,
+                                      "markersize": 1.4}
 
 
     def color(self,color):
@@ -30,10 +42,50 @@ class B2Figure:
     def create(self, **kwargs):
         return self.create_figure(**kwargs)
 
-    def create_figure(self, figsize=None, dpi=200, n_x_subfigures=1, n_y_subfigures=1, **kwargs):
+    def create_figure(self, figsize=None, dpi=200, n_x_subfigures=None, n_y_subfigures=None, **kwargs):
+        if n_x_subfigures:
+            kwargs["ncols"] = n_x_subfigures
+        if n_y_subfigures:
+            kwargs["nrows"] = n_y_subfigures
         if not figsize:
-             figsize = (5*n_x_subfigures, 5*n_y_subfigures)
-        return plt.subplots(ncols=n_x_subfigures, nrows=n_y_subfigures, figsize=figsize, dpi=dpi, **kwargs)
+             figsize = (5*kwargs["ncols"], 5*kwargs["nrows"])
+        return plt.subplots(figsize=figsize, dpi=dpi, **kwargs)
+
+    def create_pull_plot(self, data=[[]], mc=[[]], ncols=1, **kwargs):
+        gridspec_kw={'height_ratios': [2, 1]}
+        kwargs["ncols"] = ncols
+        kwargs["nrows"] = 2
+        kwargs["gridspec_kw"] = gridspec_kw
+        if not "dpi" in kwargs:
+            kwargs["dpi"] = self.dpi
+        fig, ax = plt.subplots(**kwargs)
+
+        if self.auto_description:
+            if kwargs["ncols"] == 1:
+                self.add_descriptions(ax[0], **self.description_args)
+            else:
+                pass
+        return fig, ax
+
+    def plot_errorbar(self, ax, x, data, mc, data_yerr=None, mc_yerr=None, poisson_err=True, **kwargs):
+        for arg in self.errorbar_args:
+            if not arg in kwargs:
+                kwargs[arg] = self.errorbar_args[arg]
+
+        if poisson_err:
+            if data_yerr or mc_yerr:
+                raise ValueError("data_yerr or mc_yerr given together with poission_err!")
+            data_yerr = np.sqrt(data)
+            mc_yerr = np.sqrt(mc)
+        ax.errorbar(x, data, yerr=data_yerr, **kwargs)
+        ax.errorbar(x, mc, yerr=mc_yerr, **kwargs)
+
+    def plot_pull(ax, x, data, mc, ):
+        pass
+
+
+    def tight_pull_spacing(self):
+        self.subplots_adjust(hspace=0.05)
 
     def subplots_adjust(self,**kwargs):
         plt.subplots_adjust(**kwargs)
@@ -135,7 +187,7 @@ class B2Figure:
         x_err = (bin_centers[1]-bin_centers[0])/2
         ax.errorbar(bin_centers, hist*weight, yerr=y_err*weight, xerr=x_err, label=label, elinewidth=0.5, fmt='o', color=color, markersize='1.4')
 
-    def pull_plot(self, ax, data1, data2, bins, range=None, variable='', color='black', weight=1, is_df=False, stacked=False, density=False):
+    def pull_plot(self, ax, data1, data2, bins=None, range=None, bin_edges=[], variable='', color='black', weight=1, is_df=False, stacked=False, density=False, is_hist=False):
         color = B2Colors.color[color]
 
         if stacked:
@@ -161,17 +213,20 @@ class B2Figure:
             pull = (uhist1-uhist2)/uhist1
             ax.axhline(y=0, color='grey', alpha=0.8)
             ax.errorbar(bin_centers, unp.nominal_values(pull), yerr=unp.std_devs(pull),
-                            fmt='o', color=color, markersize='1.4', elinewidth=0.5)
-
+                            **self.errorbar_args)
 
         else:
             if is_df:
                 pass
             else:
-                if not range:
-                    range = self.get_range(data1)
-                hist1, bin_edges = np.histogram(data1,bins=bins, range=range)
-                hist2, bin_edges = np.histogram(data2,bins=bins, range=range,weights=weight if isinstance(weight, list) else np.full(data2.size,weight))
+                if is_hist:
+                    hist1 = data1
+                    hist2 = data2
+                else:
+                    if not range:
+                        range = self.get_range(data1)
+                    hist1, bin_edges = np.histogram(data1,bins=bins, range=range)
+                    hist2, bin_edges = np.histogram(data2,bins=bins, range=range,weights=weight if isinstance(weight, list) else np.full(data2.size,weight))
 
 
                 uhist1 = unp.uarray(hist1,np.sqrt(hist1))
@@ -190,12 +245,25 @@ class B2Figure:
 
 
         ax.set_ylim((-1,1))
+        self.tight_pull_spacing()
 
 
+    def add_date(self, s=""):
+        now = datetime.datetime.now()
+        if s:
+            s = f"{s}_"
+        return f"{s}{now.year}{now.month}{now.day}{now.hour}{now.minute}{now.second}"
 
-    def save(self, fig, filename,target_dir="plots/",file_formats=[".pdf"], **kwargs):
+
+    def save(self, fig, filename, target_dir=None, file_formats=[".pdf"], add_date=False, **kwargs):
+        if not target_dir:
+            target_dir = self.output_dir
+
         if not os.path.isdir(target_dir):
             os.makedirs(target_dir)
+
+        if add_date:
+            filename = self.add_date(filename)
 
         for file_format in file_formats:
             #fig.savefig(os.path.join(target_dir, f'{filename}{file_format}'), bbox_inches="tight")
