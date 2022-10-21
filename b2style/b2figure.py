@@ -47,6 +47,8 @@ class B2Figure:
             kwargs["ncols"] = n_x_subfigures
         if n_y_subfigures:
             kwargs["nrows"] = n_y_subfigures
+        if "nrows" not in kwargs: kwargs["nwors"] = 1
+        if "ncols" not in kwargs: kwargs["ncols"] = 1
         if not figsize:
              figsize = (5*kwargs["ncols"], 5*kwargs["nrows"])
         return plt.subplots(figsize=figsize, dpi=dpi, **kwargs)
@@ -123,7 +125,7 @@ class B2Figure:
             if buck_nr:
                  luminosity += f", Buck. {buck_nr}"
 
-        if small_title:
+        if small_title or preliminary or simulation:
             if preliminary or simulation:
                 pad=0
                 y=1.05
@@ -169,7 +171,7 @@ class B2Figure:
         return np.sqrt(stacked_err)
 
     def calculate_stacked_err_list(self,stacked_data,weights,bin_edges):
-        # stacked_data conteins a list of data frames, the column variable is stacked, here we want to calc the unvertainty for this
+        # stacked_data conteins a list of data frames, the column variable is stacked, here we want to calc the uncertainty for this
         stacked_err = np.sum(np.array([binned_statistic(data_i,
                                           weight_i**2,
                                           statistic="sum",
