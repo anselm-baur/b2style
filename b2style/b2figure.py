@@ -13,6 +13,7 @@ from b2style.b2description import B2Description
 from collections import OrderedDict
 from pathlib import Path
 import datetime
+import types
 
 class B2Figure:
     def __init__(self, bold_labels=True, dpi=200, output_dir='plots/', auto_description=False, description={}):
@@ -254,6 +255,15 @@ class B2Figure:
 
         ax.set_ylim((-1,1))
         self.tight_pull_spacing()
+
+    def shift_offset_text_position(self, ax):
+        def upper_left_offset(self, bboxes, bboxes2):
+            upper = self.axes.bbox.ymax
+            self.offsetText.set(va="top", ha="left")
+            self.offsetText.set_position(
+                    (-0.125, upper-0.3))
+        ax._update_offset_text_position = types.MethodType(upper_left_offset, ax.yaxis)
+        ax._update_offset_text_position(0,0)
 
 
     def add_date(self, s=""):
