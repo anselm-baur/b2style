@@ -47,11 +47,17 @@ class B2Figure:
             kwargs["ncols"] = n_x_subfigures
         if n_y_subfigures:
             kwargs["nrows"] = n_y_subfigures
-        if "nrows" not in kwargs: kwargs["nwors"] = 1
+        if "nrows" not in kwargs: kwargs["nrows"] = 1
         if "ncols" not in kwargs: kwargs["ncols"] = 1
         if not figsize:
              figsize = (5*kwargs["ncols"], 5*kwargs["nrows"])
-        return plt.subplots(figsize=figsize, dpi=dpi, **kwargs)
+
+        self.fig, self.ax = plt.subplots(figsize=figsize, dpi=dpi, **kwargs)
+        if self.auto_description:
+            # we have just a single subplot
+            if type(self.ax) == type(plt.gca()):
+                self.add_descriptions(self.ax, **self.description_args)
+        return self.fig, self.ax
 
     def create_pull_plot(self, data=[[]], mc=[[]], ncols=1, **kwargs):
         gridspec_kw={'height_ratios': [2, 1]}
