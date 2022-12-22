@@ -51,13 +51,30 @@ class B2Figure:
         if "nrows" not in kwargs: kwargs["nrows"] = 1
         if "ncols" not in kwargs: kwargs["ncols"] = 1
         if not figsize:
-             figsize = (5*kwargs["ncols"], 5*kwargs["nrows"])
+             figsize = (6*kwargs["ncols"], 5*kwargs["nrows"])
 
         self.fig, self.ax = plt.subplots(figsize=figsize, dpi=dpi, **kwargs)
         if self.auto_description:
-            # we have just a single subplot
             if type(self.ax) == type(plt.gca()):
-                self.add_descriptions(self.ax, **self.description_args)
+                # we have just a single subplot
+                        self.add_descriptions(self.ax, **self.description_args)
+                        self.shift_offset_text_position(self.ax)
+            elif kwargs["ncols"] > 1 and kwargs["nrows"] == 1:
+                for i in range(kwargs["ncols"]):
+                    self.add_descriptions(self.ax[i], **self.description_args)
+                    self.shift_offset_text_position(self.ax[i])
+
+            elif kwargs["ncols"] == 1 and kwargs["nrows"] > 1:
+                for j in range(kwargs["nrows"]):
+                    self.add_descriptions(self.ax[j], **self.description_args)
+                    self.shift_offset_text_position(self.ax[j])
+            else:
+                for i in range(kwargs["ncols"]):
+                    for j in range(kwargs["nrows"]):
+                        self.add_descriptions(self.ax[i][j], **self.description_args)
+                        self.shift_offset_text_position(self.ax[i][j])
+
+
         return self.fig, self.ax
 
     def create_pull_plot(self, data=[[]], mc=[[]], ncols=1, **kwargs):
@@ -149,14 +166,19 @@ class B2Figure:
             ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'size': 16, 'style': 'normal', 'weight': 'bold'})
             ax.set_title('{}'.format('(Preliminary) ' if preliminary else '' ) + luminosity, loc="right")
 
-        ax.annotate(
-            additional_info, (0.02, 0.98), xytext=(4, -4), xycoords='axes fraction',
-            textcoords='offset points',
-            fontweight='bold', ha='left', va='top'
-        )
+        self.add_additional_info(ax=ax, additional_info=additional_info)
 
         if description:
             description.add(ax)
+
+
+    def add_additional_info(self, ax, additional_info="", fontweight='bold', ha='left', va='top'):
+        """Aadd additional info in info in the plotting area."""
+        ax.annotate(
+            additional_info, (0.02, 0.98), xytext=(4, -4), xycoords='axes fraction',
+            textcoords='offset points',
+            fontweight=fontweight, ha=ha, va=va)
+
 
     def get_bincenters_of_binedges(self, bin_edges):
         return np.mean(np.vstack([bin_edges[0:-1],bin_edges[1:]]), axis=0)
@@ -256,14 +278,24 @@ class B2Figure:
         ax.set_ylim((-1,1))
         self.tight_pull_spacing()
 
-    def shift_offset_text_position(self, ax):
+    def shift_offset_text_position_old(self, ax):
         def upper_left_offset(self, bboxes, bboxes2):
             upper = self.axes.bbox.ymax
-            self.offsetText.set(va="top", ha="left")
+            self.offsetText.set(va="bottom", ha="right")
             self.offsetText.set_position(
-                    (-0.125, upper-0.3))
+                    (-0.01, 0.5 ))#upper-0.3))
         ax._update_offset_text_position = types.MethodType(upper_left_offset, ax.yaxis)
         ax._update_offset_text_position(0,0)
+
+    def shift_offset_text_position(self, ax):
+        #self.fig.tight_layout()
+        offset = ax.yaxis.get_offset_text().get_text()
+        print(offset)
+        if len(offset) > 0:
+            ax.yaxis.offsetText.set_visible(False)
+            #ax.text(-0.2, 0.9, offset, transform=ax.transAxes,
+            #   horizontalalignment="left",
+            #   verticalalignment="bottom")
 
 
     def add_date(self, s=""):
