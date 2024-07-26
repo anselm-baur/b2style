@@ -15,10 +15,14 @@ from pathlib import Path
 import datetime
 import types
 
+import matplotlib
+
 class B2Figure:
-    def __init__(self, bold_labels=True, dpi=200, output_dir='plots/', auto_description=False, description={}):
+    def __init__(self, bold_labels=True, dpi=90, output_dir='plots/', auto_description=True, description={}):
         #self.pointstyle = {'color': 'navy', 'marker': '.', 'ls': ''}
         self.pointstyle = {'marker': '.', 'ls': ''}
+        #matplotlib.rc('text', usetex=True)
+        matplotlib.rc('text.latex', preamble=r"\usepackage{amsmath}")
         set_default_plot_params(bold_labels=bold_labels)
         b2style.b2colors.set_default_colors('phd')
         self.colors = B2Colors()
@@ -43,7 +47,7 @@ class B2Figure:
     def create(self, **kwargs):
         return self.create_figure(**kwargs)
 
-    def create_figure(self, figsize=None, dpi=200, n_x_subfigures=None, n_y_subfigures=None, **kwargs):
+    def create_figure(self, figsize=None, dpi=90, n_x_subfigures=None, n_y_subfigures=None, **kwargs):
         if n_x_subfigures:
             kwargs["ncols"] = n_x_subfigures
         if n_y_subfigures:

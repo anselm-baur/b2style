@@ -45,7 +45,11 @@ def set_default_plot_params(bold_labels=True):
     plt.rc('ytick', **ytick)
     plt.rc('legend', **legend)
     plt.rc('errorbar', **errorbar)
+    plt.rc('figure', facecolor='white')
 
     if bold_labels:
         #matplotlib.rc('text', usetex=True)
-        matplotlib.rcParams['text.latex.preamble'] = [r'\boldmath']
+        matplotlib.rcParams['text.latex.preamble'] = r'\boldmath'
+        #matplotlib.rcParams['text.usetex'] = True
+
+    #matplotlib.rcParams['figure.facecolor'] = 'white'
