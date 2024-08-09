@@ -214,6 +214,7 @@ def set_default_colors(color_set='phd'):
         color_cycler = cycler("color", PhDColors.default_colors)
         B2Colors.color = copy.deepcopy(PhDColors.colors_dict)
         B2Colors.cm["blue_green_orange"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["dark_green"], PhDColors.default_colors_dict["dark_orange"]], name="blue_green_orange")
+        B2Colors.cm["blue_green_yellow"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["dark_green"], PhDColors.default_colors_dict["dark_yellow"]], name="blue_green_yellow")
         B2Colors.cm["blue_green"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["dark_green"]], name="blue_green")
         B2Colors.cm["blue_yellow"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["dark_yellow"]], name="blue_yellow")
         B2Colors.cm["blue"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["light_blue"]], name="blue")

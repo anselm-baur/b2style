@@ -31,6 +31,8 @@ class B2Figure:
         self.simulation = None
         self.preliminary = None
 
+        self.fig_labels = []
+
         #matplotlib.rc('text', usetex=True)
         matplotlib.rc('text.latex', preamble=r"\usepackage{amsmath}")
         set_default_plot_params(bold_labels=bold_labels)
@@ -65,7 +67,7 @@ class B2Figure:
     def create(self, **kwargs):
         return self.create_figure(**kwargs)
 
-    def create_figure(self, figsize=None, dpi=90, n_x_subfigures=None, n_y_subfigures=None, **kwargs):
+    def create_figure(self, figsize=None, dpi=90, n_x_subfigures=None, n_y_subfigures=None, left=70, top=50, right=15, bottom=50, **kwargs):
         if n_x_subfigures:
             kwargs["ncols"] = n_x_subfigures
         if n_y_subfigures:
@@ -75,7 +77,10 @@ class B2Figure:
         if not figsize:
              figsize = (6*kwargs["ncols"], 5*kwargs["nrows"])
 
+        # first trim the figure, otherwise the description is displaced
         self.fig, self.ax = plt.subplots(figsize=figsize, dpi=dpi, **kwargs)
+        self.trim(fig=self.fig, left=left, right=right, top=top, bottom=bottom)
+
         if self.auto_description:
             if type(self.ax) == type(plt.gca()):
                 # we have just a single subplot
@@ -95,6 +100,8 @@ class B2Figure:
                     for j in range(kwargs["nrows"]):
                         self.add_descriptions(self.ax[i][j], **self.description_args)
                         self.shift_offset_text_position(self.ax[i][j])
+
+        #print(self.fig.transFigure.transform(self.fig_labels[0].get_position()))
 
         return self.fig, self.ax
 
@@ -173,10 +180,9 @@ class B2Figure:
 
         if small_title or plot_state or preliminary or simulation:
             if plot_state or preliminary or simulation:
-
                 y=1
-                y_offset_points = 22  # Absolute distance from the subplot in points
-                y_plot_state_distance = -15
+                y_offset_points = 17  # Absolute distance from the subplot in points
+                y_plot_state_distance = -14
             else:
                 y = 1
                 y_offset_points = 0  # Absolute distance from the subplot in points
@@ -212,14 +218,14 @@ class B2Figure:
             absolute_y_plot_state_fig = absolute_y_plot_state_pixels / self.fig.bbox.height
 
             # Set the title with the calculated y position
-            self.fig.text(bbox.x0 / self.fig.bbox.width, absolute_y_fig,
+            self.fig_labels.append(self.fig.text(bbox.x0 / self.fig.bbox.width, absolute_y_fig,
                     ' ' * title_indent + experiment, ha='left', va='bottom',
-                    fontdict={'style': 'normal', 'weight': 'bold', 'size': 16})
+                    fontdict={'style': 'normal', 'weight': 'bold', 'size': 16}))
 
-            # Add the first text (e.g., Preliminary or Simulation tag)
-            self.fig.text(bbox.x0 / self.fig.bbox.width, absolute_y_plot_state_fig, '{}'.format(' ' * title_indent) +
+            # Add the plot_state text (e.g., Preliminary or Simulation tag)
+            self.fig_labels.append(self.fig.text(bbox.x0 / self.fig.bbox.width, absolute_y_plot_state_fig, '{}'.format(' ' * title_indent) +
                     plot_state, ha='left', va='bottom',
-                    fontdict={'style': 'normal', 'weight': 'normal', 'size': 11})
+                    fontdict={'style': 'normal', 'weight': 'normal', 'size': 11}))
 
 
             ax.set_title(luminosity, loc="right")
