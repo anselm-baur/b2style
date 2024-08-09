@@ -14,21 +14,39 @@ from collections import OrderedDict
 from pathlib import Path
 import datetime
 import types
+import logging
 
 import matplotlib
 
+_log = logging.getLogger(name=__name__)
+
 class B2Figure:
-    def __init__(self, bold_labels=True, dpi=90, output_dir='plots/', auto_description=True, description={}):
+    def __init__(self, bold_labels=True, dpi=90, output_dir='plots/', plot_state=None, experiment=None,
+                 luminosity=None, auto_description=True, description=None, color_theme='phd'):
         #self.pointstyle = {'color': 'navy', 'marker': '.', 'ls': ''}
         self.pointstyle = {'marker': '.', 'ls': ''}
+        self.plot_state = plot_state
+        self.experiment = experiment
+        self.luminosity = luminosity
+        self.simulation = None
+        self.preliminary = None
+
         #matplotlib.rc('text', usetex=True)
         matplotlib.rc('text.latex', preamble=r"\usepackage{amsmath}")
         set_default_plot_params(bold_labels=bold_labels)
-        b2style.b2colors.set_default_colors('phd')
+        b2style.b2colors.set_default_colors(color_theme)
         self.colors = B2Colors()
         self.dpi = dpi
 
-        self.description_args = description
+        if description is None:
+            self.description_args = {}
+        else:
+            for key, value in description.items():
+                if key in self.__dict__:
+                    self.__dict__[key] = value
+                else:
+                    _log.warning(f"description atribute {key} not found... skip")
+            self.description_args = description
         self.auto_description = auto_description
         self.save_fig = False
         self.output_dir = output_dir
@@ -77,7 +95,6 @@ class B2Figure:
                     for j in range(kwargs["nrows"]):
                         self.add_descriptions(self.ax[i][j], **self.description_args)
                         self.shift_offset_text_position(self.ax[i][j])
-
 
         return self.fig, self.ax
 
@@ -134,6 +151,7 @@ class B2Figure:
                                  small_title: Union[bool, None] = False,
                                  preliminary: Union[bool, None] = False,
                                  simulation: Union[bool, None] = False,
+                                 plot_state: Union[str, None] = None,
                                  title_indent: Union[int, None] = 0,
                                  exp_nr: Union[int, None] = None,
                                  proc_nr: Union[int, None] = None,
@@ -153,17 +171,56 @@ class B2Figure:
             if buck_nr:
                  luminosity += f", Buck. {buck_nr}"
 
-        if small_title or preliminary or simulation:
-            if preliminary or simulation:
-                pad=0
-                y=1.05
+        if small_title or plot_state or preliminary or simulation:
+            if plot_state or preliminary or simulation:
+
+                y=1
+                y_offset_points = 22  # Absolute distance from the subplot in points
+                y_plot_state_distance = -15
             else:
-                pad = 0
                 y = 1
-            lower_left = (0, 1.02)
-            ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'style': 'normal', 'weight': 'bold'}, pad=pad, y=y)
-            ax.text(*lower_left, '{}'.format(' '*title_indent)+'{}'.format('(Preliminary)' if preliminary else '')+'{}'.format('(Simulation)' if simulation else ''),
-                    transform=ax.transAxes)
+                y_offset_points = 0  # Absolute distance from the subplot in points
+
+            print("plot_state", plot_state)
+            if not plot_state:
+                plot_state = ""
+                if simulation:
+                    plot_state = "(Simulation)"
+                elif preliminary:
+                    plot_state = "(Preliminary)"
+
+            print("plot_state", plot_state)
+            #lower_left = (0, 1.02)
+            #ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'style': 'normal', 'weight': 'bold'}, pad=pad, y=y)
+            #ax.text(*lower_left, '{}'.format(' '*title_indent)+'{}'.format('(Preliminary)' if preliminary else '')+'{}'.format('(Simulation)' if simulation else ''),
+            #        transform=ax.transAxes)
+
+
+            # Get the bounding box of the axes in figure coordinates
+            renderer = self.fig.canvas.get_renderer()
+            bbox = ax.get_window_extent(renderer)
+
+            # Convert the y_offset from points to pixels
+            y_offset_pixels = y_offset_points
+
+            # Calculate the y position for the title in pixels
+            absolute_y_pixels = bbox.ymax + y_offset_pixels
+            absolute_y_plot_state_pixels = absolute_y_pixels + y_plot_state_distance
+
+            # Convert the y position from pixels to figure coordinates
+            absolute_y_fig = absolute_y_pixels / self.fig.bbox.height
+            absolute_y_plot_state_fig = absolute_y_plot_state_pixels / self.fig.bbox.height
+
+            # Set the title with the calculated y position
+            self.fig.text(bbox.x0 / self.fig.bbox.width, absolute_y_fig,
+                    ' ' * title_indent + experiment, ha='left', va='bottom',
+                    fontdict={'style': 'normal', 'weight': 'bold', 'size': 16})
+
+            # Add the first text (e.g., Preliminary or Simulation tag)
+            self.fig.text(bbox.x0 / self.fig.bbox.width, absolute_y_plot_state_fig, '{}'.format(' ' * title_indent) +
+                    plot_state, ha='left', va='bottom',
+                    fontdict={'style': 'normal', 'weight': 'normal', 'size': 11})
+
 
             ax.set_title(luminosity, loc="right")
         else:
@@ -300,6 +357,24 @@ class B2Figure:
             #ax.text(-0.2, 0.9, offset, transform=ax.transAxes,
             #   horizontalalignment="left",
             #   verticalalignment="bottom")
+
+
+    def trim(self, fig, left=50, top=50, right=10, bottom=50):
+        # Convert pixel values to relative figure units
+        left_margin_px = left  # pixels
+        right_margin_px = right  # pixels
+        top_margin_px = top  # pixels
+        bottom_margin_px = bottom  # pixels
+
+        # Convert pixels to relative figure units
+        left_margin = left_margin_px / fig.get_figwidth() / fig.dpi
+        right_margin = right_margin_px / fig.get_figwidth() / fig.dpi
+        top_margin = top_margin_px / fig.get_figheight() / fig.dpi
+        bottom_margin = bottom_margin_px / fig.get_figheight() / fig.dpi
+
+        # Adjust the subplots
+        fig.subplots_adjust(left=left_margin, right=1-right_margin,
+                            top=1-top_margin, bottom=bottom_margin)
 
 
     def add_date(self, s=""):
