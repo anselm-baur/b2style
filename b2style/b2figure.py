@@ -187,7 +187,7 @@ class B2Figure:
                 y = 1
                 y_offset_points = 0  # Absolute distance from the subplot in points
 
-            print("plot_state", plot_state)
+            #print("plot_state", plot_state)
             if not plot_state:
                 plot_state = ""
                 if simulation:
@@ -195,7 +195,7 @@ class B2Figure:
                 elif preliminary:
                     plot_state = "(Preliminary)"
 
-            print("plot_state", plot_state)
+            #print("plot_state", plot_state)
             #lower_left = (0, 1.02)
             #ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'style': 'normal', 'weight': 'bold'}, pad=pad, y=y)
             #ax.text(*lower_left, '{}'.format(' '*title_indent)+'{}'.format('(Preliminary)' if preliminary else '')+'{}'.format('(Simulation)' if simulation else ''),
