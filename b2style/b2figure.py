@@ -354,6 +354,16 @@ class B2Figure:
         ax._update_offset_text_position = types.MethodType(upper_left_offset, ax.yaxis)
         ax._update_offset_text_position(0,0)
 
+    def shift_offset_text_position_pull_old(self, ax):
+        def upper_left_offset(self, bboxes, bboxes2):
+            top = self.axes.bbox.ymax
+            right = self.axes.bbox.xmax
+            self.offsetText.set(va="bottom", ha="right")
+            self.offsetText.set_position(
+                    (0.15, top*0.9 ))#upper-0.3))
+        ax.yaxis._update_offset_text_position = types.MethodType(upper_left_offset, ax.yaxis)
+        ax.yaxis._update_offset_text_position(0.1,-0.1)
+
     def shift_offset_text_position(self, ax):
         #self.fig.tight_layout()
         offset = ax.yaxis.get_offset_text().get_text()
