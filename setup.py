@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="b2style",
-    version="0.0.13",
+    version="0.0.14",
     author="Anselm Baur",
     author_email="anselm.baur@desy.de",
     description="style package for Belle II plots",
