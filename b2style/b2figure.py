@@ -62,12 +62,13 @@ class B2Figure:
 
 
     def color(self,color):
+        #print("get color", color)
         return self.colors.color[color]
 
     def create(self, **kwargs):
         return self.create_figure(**kwargs)
 
-    def create_figure(self, figsize=None, dpi=90, n_x_subfigures=None, n_y_subfigures=None, left=70, top=50, right=15, bottom=50, **kwargs):
+    def create_figure(self, figsize=None, dpi=90, n_x_subfigures=None, n_y_subfigures=None, left=70, top=40, right=15, bottom=40, **kwargs):
         if n_x_subfigures:
             kwargs["ncols"] = n_x_subfigures
         if n_y_subfigures:
@@ -82,6 +83,10 @@ class B2Figure:
         self.trim(fig=self.fig, left=left, right=right, top=top, bottom=bottom)
 
         if self.auto_description:
+            if "plot_state" not in self.description_args:
+                self.description_args.update({"plot_state": self.plot_state})
+            if "luminosity" not in self.description_args:
+                self.description_args.update({"luminosity": self.luminosity})
             if type(self.ax) == type(plt.gca()):
                 # we have just a single subplot
                         self.add_descriptions(self.ax, **self.description_args)
@@ -96,10 +101,11 @@ class B2Figure:
                     self.add_descriptions(self.ax[j], **self.description_args)
                     self.shift_offset_text_position(self.ax[j])
             else:
+                print(self.ax.shape)
                 for i in range(kwargs["ncols"]):
                     for j in range(kwargs["nrows"]):
-                        self.add_descriptions(self.ax[i][j], **self.description_args)
-                        self.shift_offset_text_position(self.ax[i][j])
+                        self.add_descriptions(self.ax[j][i], **self.description_args)
+                        self.shift_offset_text_position(self.ax[j][i])
 
         #print(self.fig.transFigure.transform(self.fig_labels[0].get_position()))
 
@@ -153,7 +159,7 @@ class B2Figure:
 
     def add_descriptions(self, ax: plt.axis,
                                  experiment: Union[str, None] = 'Belle II',
-                                 luminosity: Union[str, int, float, None] = '',
+                                 luminosity: Union[str, int, float, None] = None,
                                  additional_info: Union[str, None] = None,
                                  small_title: Union[bool, None] = False,
                                  preliminary: Union[bool, None] = False,
@@ -163,11 +169,15 @@ class B2Figure:
                                  exp_nr: Union[int, None] = None,
                                  proc_nr: Union[int, None] = None,
                                  buck_nr: Union[int, None] = None,
-                                 description: Union[B2Description, None] = None
+                                 description: Union[B2Description, None] = None,
+                                 y_offset: Union[int] = 17,
+                                 extra_luminosity: Union[str, int, float, None] = None
                                  ):
 
         # generate luminosity text
-        if type(luminosity) == int or type(luminosity) == float:
+        if luminosity is None:
+            luminosity = ""
+        if isinstance(luminosity, int) or isinstance(luminosity, float):
            luminosity = r"$\int \mathcal{L} \,\mathrm{d}t=" + "{:.0f}".format(np.round(luminosity,0))  +"\,\mathrm{fb}^{-1}$"
 
         # add some additional dataset meta data
@@ -178,29 +188,24 @@ class B2Figure:
             if buck_nr:
                  luminosity += f", Buck. {buck_nr}"
 
+        #print("plot_state", plot_state)
+        if not plot_state:
+            plot_state = ""
+            if simulation:
+                plot_state = "(Simulation)"
+            elif preliminary:
+                plot_state = "(Preliminary)"
+        #print(f"plot_state: {plot_state}")
+        #print(f"luminosity: {luminosity}")
+
         if small_title or plot_state or preliminary or simulation:
             if plot_state or preliminary or simulation:
                 y=1
-                y_offset_points = 17  # Absolute distance from the subplot in points
+                y_offset_points = y_offset  # Absolute distance from the subplot in points
                 y_plot_state_distance = -14
             else:
                 y = 1
                 y_offset_points = 0  # Absolute distance from the subplot in points
-
-            #print("plot_state", plot_state)
-            if not plot_state:
-                plot_state = ""
-                if simulation:
-                    plot_state = "(Simulation)"
-                elif preliminary:
-                    plot_state = "(Preliminary)"
-
-            #print("plot_state", plot_state)
-            #lower_left = (0, 1.02)
-            #ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'style': 'normal', 'weight': 'bold'}, pad=pad, y=y)
-            #ax.text(*lower_left, '{}'.format(' '*title_indent)+'{}'.format('(Preliminary)' if preliminary else '')+'{}'.format('(Simulation)' if simulation else ''),
-            #        transform=ax.transAxes)
-
 
             # Get the bounding box of the axes in figure coordinates
             renderer = self.fig.canvas.get_renderer()
@@ -227,11 +232,17 @@ class B2Figure:
                     plot_state, ha='left', va='bottom',
                     fontdict={'style': 'normal', 'weight': 'normal', 'size': 11}))
 
+            if extra_luminosity is not None:
+                # Add extra text in lumi style at the same y level es the plot _state with loc right
+                self.fig_labels.append(self.fig.text(bbox.xmax / self.fig.bbox.width, absolute_y_plot_state_fig,
+                    f"{extra_luminosity}", ha='right', va='bottom',
+                    fontdict={'style': 'normal', 'weight': 'normal', 'size': 11}))
+
 
             ax.set_title(luminosity, loc="right")
         else:
             ax.set_title('{}'.format(' '*title_indent)+experiment, loc="left", fontdict={'size': 16, 'style': 'normal', 'weight': 'bold'})
-            ax.set_title('{}'.format('(Preliminary) ' if preliminary else '' ) + luminosity, loc="right")
+            ax.set_title(plot_state + luminosity, loc="right")
 
         self.add_additional_info(ax=ax, additional_info=additional_info)
 
@@ -239,10 +250,10 @@ class B2Figure:
             description.add(ax)
 
 
-    def add_additional_info(self, ax, additional_info="", fontweight='bold', ha='left', va='top'):
+    def add_additional_info(self, ax, additional_info="", fontweight='bold', ha='left', va='top', x=0.02, y=0.98):
         """Aadd additional info in info in the plotting area."""
         ax.annotate(
-            additional_info, (0.02, 0.98), xytext=(4, -4), xycoords='axes fraction',
+            additional_info, (x, y), xytext=(4, -4), xycoords='axes fraction',
             textcoords='offset points',
             fontweight=fontweight, ha=ha, va=va)
 
