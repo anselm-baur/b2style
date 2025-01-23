@@ -33,7 +33,8 @@ def set_default_plot_params(bold_labels=True):
         'lw': 1.5
     }
     legend = {
-        'frameon': False
+         'framealpha': 0
+    #    'frameon': False
     }
     errorbar = {
         'capsize': 0,
