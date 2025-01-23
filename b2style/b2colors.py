@@ -24,7 +24,7 @@ class B2Colors(object):
         return trancparent_color_equivalent(color, alpha)
 
     def create_cm(colors, name="my_color_map"):
-        custom_cmap = LinearSegmentedColormap.from_list(name, colors)
+        custom_cmap = LinearSegmentedColormap.from_list(name, copy.deepcopy(colors))
         return custom_cmap
 
 
@@ -55,6 +55,7 @@ class PhDColors(object):
     """
 
     colors_dict = {
+        "very_dark_green": "#2a7e19", #388004
         "dark_green": '#5ca904',
         "green": '#95c75b',
         "light_green": '#bddc9a',
@@ -71,6 +72,7 @@ class PhDColors(object):
         "yellow": "#f8d24e",
         "light_yellow": "#fadf81",
 
+        "very_dark_orange": "#ca6b02",
         "dark_orange": "#e17701",
         "orange": "#ea9f4d",
         "light_orange": "#f1c18c",
@@ -211,14 +213,24 @@ class KITColors(object):
 
 def set_default_colors(color_set='phd'):
     if color_set == 'phd':
-        color_cycler = cycler("color", PhDColors.default_colors)
+        color_cycler = cycler("color", copy.deepcopy(PhDColors.default_colors))
         B2Colors.color = copy.deepcopy(PhDColors.colors_dict)
         B2Colors.cm["blue_green_orange"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["dark_green"], PhDColors.default_colors_dict["dark_orange"]], name="blue_green_orange")
         B2Colors.cm["blue_green_yellow"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["dark_green"], PhDColors.default_colors_dict["dark_yellow"]], name="blue_green_yellow")
         B2Colors.cm["blue_green"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["dark_green"]], name="blue_green")
         B2Colors.cm["blue_yellow"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["dark_yellow"]], name="blue_yellow")
+        B2Colors.cm["blue_white_red"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], "white",PhDColors.default_colors_dict["dark_red"]], name="blue_white_red")
+        B2Colors.cm["red_white_blue"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_red"], "white",PhDColors.default_colors_dict["dark_blue"]], name="red_white_blue")
         B2Colors.cm["blue"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_blue"], PhDColors.default_colors_dict["light_blue"]], name="blue")
+        B2Colors.cm["green"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_green"], PhDColors.default_colors_dict["light_green"]], name="green")
+        B2Colors.cm["orange"] = B2Colors.create_cm([PhDColors.default_colors_dict["dark_orange"], PhDColors.default_colors_dict["light_orange"]], name="orange")
+        #B2Colors.cm["vd_green"] = B2Colors.create_cm([PhDColors.default_colors_dict["very_dark_green"], PhDColors.default_colors_dict["green"], PhDColors.default_colors_dict["light_green"]], name="vd_green")
+        #B2Colors.cm["vd_orange"] = B2Colors.create_cm([PhDColors.default_colors_dict["very_dark_orange"], PhDColors.default_colors_dict["orange"], PhDColors.default_colors_dict["light_orange"]], name="vd_orange")
+        B2Colors.cm["vd_green"] = B2Colors.create_cm([PhDColors.default_colors_dict["very_dark_green"], PhDColors.default_colors_dict["light_green"]], name="vd_green")
+        B2Colors.cm["vd_orange"] = B2Colors.create_cm([PhDColors.default_colors_dict["very_dark_orange"], PhDColors.default_colors_dict["light_orange"]], name="vd_orange")
+        B2Colors.cm["green_grey"] = B2Colors.create_cm([PhDColors.default_colors_dict["green"], PhDColors.default_colors_dict["grey"]], name="green_grey")
         B2Colors.cm["default"] = B2Colors.cm["blue_green_orange"]
+        B2Colors.color = copy.deepcopy(PhDColors.colors_dict)
         color_names = PhDColors.default_colors_dict
     elif color_set == 'kit':
         color_cycler = cycler("color", KITColors.default_colors)
