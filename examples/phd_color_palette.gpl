@@ -1,0 +1,49 @@
+GIMP Palette
+Name: A.Baur phd colors
+Columns: 4
+
+# black and white
+0   0   0   black - #000000
+255 255 255 white - #ffffff
+#
+# grey
+102 102 102   grey - #666666
+165 165 165   grey - #a5a5a5
+204 204 204   grey - #cccccc
+#
+# green
+ 92 169   4   green - #5ca904
+149 199  91   green - #95c75b
+189 220 154   green - #bddc9a
+222 237 204   green - #deedcc
+#
+# blue
+ 30  72 143   blue - #1e488f
+ 97 126 176   blue - #617eb0
+153 172 204   blue - #99accc
+210 218 232   blue - #d2dae8
+#
+# red
+154  43  27   red - #9a2b1b
+182 102  90   red - #b6665a
+210 161 153   red - #d2a199
+232 208 204   red - #e8d0cc
+#
+# yellow
+245 191   3   yellow - #f5bf03
+248 210  78   yellow - #f8d24e
+250 223 129   yellow - #fadf81
+252 235 179   yellow - #fcebb3
+#
+# orange
+225 119   1   orange - #e17701
+234 159  77   orange - #ea9f4d
+241 193 140   orange - #f1c18c
+249 227 204   orange - #f9e3cc
+#
+# pink
+160   4 152   pink - #a00498
+198 104 193   pink - #c668c1
+221 167 218   pink - #dda7da
+236 204 234   pink - #ecccea
+#
